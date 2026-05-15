@@ -1,0 +1,226 @@
+USE master;
+GO
+
+-- 1. XÓA DATABASE CŨ NẾU ĐANG TỒN TẠI
+IF EXISTS (SELECT * FROM sys.databases WHERE name = 'ClinicManagement')
+BEGIN
+    ALTER DATABASE ClinicManagement SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE ClinicManagement;
+END
+GO
+
+-- 2. TẠO MỚI DATABASE
+CREATE DATABASE ClinicManagement;
+GO
+USE ClinicManagement;
+GO
+
+-----------------------------------------------------------
+-- 3. TẠO CẤU TRÚC BẢNG (CHUẨN HÓA NHA KHOA)
+-----------------------------------------------------------
+
+CREATE TABLE Roles (
+    RoleID INT PRIMARY KEY IDENTITY(1,1),
+    RoleName NVARCHAR(50) NOT NULL
+);
+
+CREATE TABLE Specialties (
+    SpecialtyID INT PRIMARY KEY IDENTITY(1,1),
+    SpecialtyName NVARCHAR(100) NOT NULL,
+    Description NVARCHAR(500)
+);
+
+CREATE TABLE Services (
+    ServiceID INT PRIMARY KEY IDENTITY(1,1),
+    ServiceName NVARCHAR(200) NOT NULL,
+    Price DECIMAL(18, 2) NOT NULL,
+    DurationMinutes INT DEFAULT 30,
+    ImageUrl NVARCHAR(MAX)
+);
+
+CREATE TABLE Users (
+    UserID INT PRIMARY KEY IDENTITY(1,1),
+    Username VARCHAR(50) UNIQUE NOT NULL,
+    PasswordHash VARCHAR(255) NOT NULL,
+    Email VARCHAR(100) UNIQUE,
+    FullName NVARCHAR(100) NOT NULL,
+    PhoneNumber VARCHAR(15),
+    RoleID INT FOREIGN KEY REFERENCES Roles(RoleID),
+    CreatedAt DATETIME DEFAULT GETDATE()
+);
+
+CREATE TABLE Doctors (
+    DoctorID INT PRIMARY KEY IDENTITY(1,1),
+    UserID INT FOREIGN KEY REFERENCES Users(UserID),
+    SpecialtyID INT FOREIGN KEY REFERENCES Specialties(SpecialtyID),
+    ExperienceYears INT,
+    Bio NVARCHAR(MAX),
+    ImageUrl NVARCHAR(MAX), 
+    IsActive BIT DEFAULT 1
+);
+
+CREATE TABLE Appointments (
+    AppointmentID INT PRIMARY KEY IDENTITY(1,1),
+    PatientID INT FOREIGN KEY REFERENCES Users(UserID),
+    DoctorID INT FOREIGN KEY REFERENCES Doctors(DoctorID),
+    ServiceID INT FOREIGN KEY REFERENCES Services(ServiceID),
+    AppointmentDate DATETIME NOT NULL,
+    Status NVARCHAR(50) DEFAULT N'Pending', -- Pending, Confirmed, Examining, Completed, Cancelled
+    Notes NVARCHAR(MAX),
+    CreatedAt DATETIME DEFAULT GETDATE()
+);
+
+-- Tích hợp sẵn Symptoms và PatientID
+CREATE TABLE MedicalRecords (
+    RecordID INT PRIMARY KEY IDENTITY(1,1),
+    AppointmentID INT FOREIGN KEY REFERENCES Appointments(AppointmentID),
+    PatientID INT FOREIGN KEY REFERENCES Users(UserID),
+    Symptoms NVARCHAR(MAX),
+    Diagnosis NVARCHAR(MAX) NOT NULL,
+    TreatmentPlan NVARCHAR(MAX),
+    Prescription NVARCHAR(MAX),
+    DateCreated DATETIME DEFAULT GETDATE()
+);
+
+CREATE TABLE Invoices (
+    InvoiceID INT PRIMARY KEY IDENTITY(1,1),
+    AppointmentID INT FOREIGN KEY REFERENCES Appointments(AppointmentID),
+    TotalAmount DECIMAL(18, 2) NOT NULL,
+    Status NVARCHAR(50) DEFAULT N'Unpaid',
+    PaymentDate DATETIME
+);
+
+CREATE TABLE Facilities (
+    FacilityID INT PRIMARY KEY IDENTITY(1,1),
+    FacilityName NVARCHAR(200) NOT NULL,
+    Description NVARCHAR(MAX),
+    ImageUrl NVARCHAR(MAX),
+    IsOperating BIT DEFAULT 1,
+    CreatedAt DATETIME DEFAULT GETDATE()
+);
+
+CREATE TABLE News (
+    NewsID INT PRIMARY KEY IDENTITY(1,1),
+    Title NVARCHAR(250) NOT NULL,
+    Summary NVARCHAR(500),
+    Content NVARCHAR(MAX),
+    ImageUrl NVARCHAR(MAX),
+    PublishDate DATETIME DEFAULT GETDATE(),
+    Author NVARCHAR(100) DEFAULT N'Nha khoa Quốc tế Delta'
+);
+GO
+
+-----------------------------------------------------------
+-- 4. NẠP DỮ LIỆU MẪU (SEED DATA - 100% NHA KHOA)
+-----------------------------------------------------------
+
+-- 4.1 Roles & Specialties
+INSERT INTO Roles (RoleName) VALUES ('Admin'), ('Doctor'), ('Patient');
+
+INSERT INTO Specialties (SpecialtyName, Description) VALUES 
+(N'Răng sứ thẩm mỹ', N'Bọc răng sứ, dán sứ Veneer'), 
+(N'Chỉnh nha - Niềng răng', N'Niềng răng mắc cài, niềng răng trong suốt'),
+(N'Cấy ghép Implant', N'Phục hình răng đã mất bằng trụ chân răng'), 
+(N'Nha khoa tổng quát', N'Nhổ răng, trám răng, chữa tủy'),
+(N'Điều trị nội nha', N'Điều trị chuyên sâu ống tủy răng');
+
+-- 4.2 Services (Dựa trên menu của bạn)
+INSERT INTO Services (ServiceName, Price, DurationMinutes) VALUES 
+(N'Nhổ răng khôn mọc lệch', 1500000, 60), 
+(N'Lấy cao răng & Đánh bóng', 150000, 30),
+(N'Trám răng thẩm mỹ', 300000, 30), 
+(N'Tẩy trắng răng Laser', 2500000, 60),
+(N'Bọc răng sứ Cercon', 4500000, 90);
+
+-- 4.3 Users (1 Admin, 5 Bác sĩ, 10 Bệnh nhân)
+INSERT INTO Users (Username, PasswordHash, FullName, RoleID, Email) VALUES 
+('admin', '123', N'Quản trị viên Delta', 1, 'admin@delta.com'),
+('bs_hung', '123', N'BS. Nguyễn Mạnh Hùng', 2, 'hung@delta.com'), -- ID 2
+('bs_thao', '123', N'BS. Phạm Phương Thảo', 2, 'thao@delta.com'), -- ID 3
+('bs_cuong', '123', N'BS. Trần Mạnh Cường', 2, 'cuong@delta.com'),-- ID 4
+('bs_lan', '123', N'BS. Trịnh Thu Lan', 2, 'lan@delta.com'),      -- ID 5
+('bs_vinh', '123', N'BS. Hoàng Quốc Vinh', 2, 'vinh@delta.com');  -- ID 6
+
+-- Nạp 10 bệnh nhân mẫu
+INSERT INTO Users (Username, PasswordHash, FullName, RoleID, Email, PhoneNumber) VALUES 
+('p01', '123', N'Trần Văn An', 3, 'an@gmail.com', '0901234501'),
+('p02', '123', N'Lê Minh Tâm', 3, 'tam@gmail.com', '0901234502'),
+('p03', '123', N'Nguyễn Thu Hà', 3, 'ha@gmail.com', '0901234503'),
+('p04', '123', N'Phạm Gia Bảo', 3, 'bao@gmail.com', '0901234504'),
+('p05', '123', N'Hoàng Thúy Vy', 3, 'vy@gmail.com', '0901234505'),
+('p06', '123', N'Đặng Văn Hùng', 3, 'hung@gmail.com', '0901234506'),
+('p07', '123', N'Vũ Phương Thảo', 3, 'thao@gmail.com', '0901234507'),
+('p08', '123', N'Bùi Tiến Dũng', 3, 'dung@gmail.com', '0901234508'),
+('p09', '123', N'Trần Thanh Hải', 3, 'hai@gmail.com', '0901234509'),
+('p10', '123', N'Lý Tiểu Long', 3, 'long@gmail.com', '0901234510');
+
+-- 4.4 Doctors (Liên kết UserID 2 đến 6)
+INSERT INTO Doctors (UserID, SpecialtyID, ExperienceYears, Bio) VALUES 
+(2, 3, 15, N'Chuyên gia Implant, tu nghiệp tại Pháp'), -- DrID 1
+(3, 2, 8, N'Chuyên gia niềng răng Invisalign'),       -- DrID 2
+(4, 4, 10, N'Bác sĩ nha khoa tổng quát nhẹ nhàng'),    -- DrID 3
+(5, 1, 12, N'Chuyên gia thiết kế nụ cười và răng sứ'), -- DrID 4
+(6, 5, 7, N'Chuyên gia điều trị tủy và nội nha');     -- DrID 5
+
+-- 4.5 Appointments (ĐỔ ĐẦY LỊCH CHO 5 BÁC SĨ - Mỗi người 7 lịch)
+
+-- BS HÙNG (DoctorID 1)
+INSERT INTO Appointments (PatientID, DoctorID, ServiceID, AppointmentDate, Status, Notes) VALUES 
+(7, 1, 1, DATEADD(MINUTE, 10, GETDATE()), 'Pending', N'Nhổ răng khôn đau'),
+(8, 1, 1, DATEADD(MINUTE, 20, GETDATE()), 'Pending', N'Tư vấn Implant'),
+(9, 1, 1, DATEADD(MINUTE, 30, GETDATE()), 'Pending', N'Kiểm tra khớp cắn'),
+(10, 1, 1, DATEADD(HOUR, 1, GETDATE()), 'Confirmed', N'Duyệt phẫu thuật'),
+(11, 1, 1, DATEADD(HOUR, 2, GETDATE()), 'Confirmed', N'Phẫu thuật cắm trụ'),
+(12, 1, 1, DATEADD(HOUR, 3, GETDATE()), 'Confirmed', N'Tái khám Implant'),
+(7, 1, 1, GETDATE(), 'Examining', N'Đang vệ sinh vùng phẫu thuật');
+
+-- BS THẢO (DoctorID 2)
+INSERT INTO Appointments (PatientID, DoctorID, ServiceID, AppointmentDate, Status, Notes) VALUES 
+(8, 2, 2, DATEADD(MINUTE, 15, GETDATE()), 'Pending', N'Lấy cao răng'),
+(9, 2, 2, DATEADD(MINUTE, 25, GETDATE()), 'Pending', N'Vệ sinh định kỳ'),
+(10, 2, 2, DATEADD(MINUTE, 35, GETDATE()), 'Pending', N'Tư vấn niềng răng'),
+(11, 2, 2, DATEADD(HOUR, 1, GETDATE()), 'Confirmed', N'Siết răng mắc cài'),
+(12, 2, 2, DATEADD(HOUR, 2, GETDATE()), 'Confirmed', N'Gắn thun chỉnh nha'),
+(7, 2, 2, DATEADD(HOUR, 3, GETDATE()), 'Confirmed', N'Thay dây cung'),
+(8, 2, 2, GETDATE(), 'Examining', N'Đang lấy dấu răng');
+
+-- BS CƯỜNG (DoctorID 3)
+INSERT INTO Appointments (PatientID, DoctorID, ServiceID, AppointmentDate, Status, Notes) VALUES 
+(9, 3, 3, DATEADD(MINUTE, 10, GETDATE()), 'Pending', N'Trám răng sâu răng 36'),
+(10, 3, 3, DATEADD(MINUTE, 20, GETDATE()), 'Pending', N'Trám kẽ răng cửa'),
+(11, 3, 3, DATEADD(MINUTE, 30, GETDATE()), 'Pending', N'Hàn răng sữa cho bé'),
+(12, 3, 3, DATEADD(HOUR, 1, GETDATE()), 'Confirmed', N'Hàn thẩm mỹ răng 11'),
+(7, 3, 3, DATEADD(HOUR, 2, GETDATE()), 'Confirmed', N'Thay miếng trám cũ'),
+(8, 3, 3, DATEADD(HOUR, 3, GETDATE()), 'Confirmed', N'Kiểm tra lỗ sâu'),
+(9, 3, 3, GETDATE(), 'Examining', N'Đang mài tạo xoang');
+
+-- BS LAN (DoctorID 4)
+INSERT INTO Appointments (PatientID, DoctorID, ServiceID, AppointmentDate, Status, Notes) VALUES 
+(10, 4, 4, DATEADD(HOUR, 1, GETDATE()), 'Pending', N'Tẩy trắng răng'),
+(11, 4, 4, DATEADD(HOUR, 2, GETDATE()), 'Pending', N'Làm trắng đón Tết'),
+(12, 4, 4, DATEADD(HOUR, 3, GETDATE()), 'Pending', N'Tư vấn mặt dán sứ'),
+(7, 4, 4, DATEADD(HOUR, 4, GETDATE()), 'Confirmed', N'Mài cùi răng sứ'),
+(8, 4, 4, DATEADD(HOUR, 5, GETDATE()), 'Confirmed', N'Gắn răng sứ tạm'),
+(9, 4, 4, DATEADD(HOUR, 6, GETDATE()), 'Confirmed', N'Thử khớp sứ'),
+(10, 4, 4, GETDATE(), 'Examining', N'Đang chiếu đèn laser');
+
+-- BS VINH (DoctorID 5)
+INSERT INTO Appointments (PatientID, DoctorID, ServiceID, AppointmentDate, Status, Notes) VALUES 
+(11, 5, 5, DATEADD(HOUR, 1, GETDATE()), 'Pending', N'Chữa tủy răng 46'),
+(12, 5, 5, DATEADD(HOUR, 2, GETDATE()), 'Pending', N'Lấy tủy lần 1'),
+(7, 5, 5, DATEADD(HOUR, 3, GETDATE()), 'Pending', N'Đặt thuốc diệt tủy'),
+(8, 5, 5, DATEADD(HOUR, 4, GETDATE()), 'Confirmed', N'Trám bít ống tủy'),
+(9, 5, 5, DATEADD(HOUR, 5, GETDATE()), 'Confirmed', N'Kiểm tra X-quang tủy'),
+(10, 5, 5, DATEADD(HOUR, 6, GETDATE()), 'Confirmed', N'Chữa tủy răng 26'),
+(11, 5, 5, GETDATE(), 'Examining', N'Đang dùng trâm máy nội nha');
+
+-- 4.6 Facilities & News
+INSERT INTO Facilities (FacilityName, Description) VALUES 
+(N'Máy CT Cone Beam 3D', N'Chụp phim khảo sát xương hàm chi tiết'),
+(N'Máy nội nha Morita', N'Đo chiều dài ống tủy chính xác tuyệt đối');
+
+INSERT INTO News (Title, Summary) VALUES 
+(N'Ưu đãi bọc sứ Cercon', N'Giảm 20% cho nhóm 2 người'),
+(N'Kiến thức về Implant', N'Tại sao nên chọn Implant thay vì cầu răng?');
+GO
+
