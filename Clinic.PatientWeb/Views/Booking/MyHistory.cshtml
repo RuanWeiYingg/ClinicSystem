@@ -1,0 +1,40 @@
+﻿@model List<Clinic.Shared.Model.Appointment>
+@{
+    ViewData["Title"] = "Lịch sử thăm khám";
+}
+
+<div class="container mt-4">
+    <h4 class="fw-bold mb-4">LỊCH SỬ THĂM KHÁM</h4>
+    <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">Ngày khám</th>
+                        <th>Chuyên khoa</th>
+                        <th>Bác sĩ</th>
+                        <th>Trạng thái</th>
+                        <th class="text-end pe-4">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="ps-4">@item.AppointmentDate.ToString("dd/MM/yyyy")</td>
+                                <td>@item.ServiceID</td> @* Sau này nên join tên dịch vụ *@
+                                <td>@item.DoctorID</td>
+                                <td><span class="badge bg-info">@item.Status</span></td>
+                                <td class="text-end pe-4">
+                                    <a asp-action="TrackProgress" asp-route-id="@item.AppointmentID" class="btn btn-sm btn-outline-primary">Chi tiết</a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

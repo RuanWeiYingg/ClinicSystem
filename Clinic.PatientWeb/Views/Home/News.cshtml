@@ -1,0 +1,53 @@
+﻿@model IEnumerable<Clinic.Shared.Model.News>
+
+<div class="container mt-5">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold text-primary">TIN TỨC & SỰ KIỆN</h2>
+        <p class="text-muted">Cập nhật những thông tin y khoa và hoạt động mới nhất từ hệ thống Phòng khám Delta.</p>
+        <hr class="mx-auto" style="width: 50px; height: 3px; background-color: #0d6efd;">
+    </div>
+
+    <div class="row">
+        @if (Model != null && Model.Any())
+        {
+            foreach (var item in Model)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm border-0 news-card">
+                        <img src="@(item.ImageUrl ?? "https://via.placeholder.com/800x500?text=Delta+News")"
+                             class="card-img-top" style="height: 200px; object-fit: cover;">
+                        <div class="card-body p-4">
+                            <p class="text-primary small mb-2"><i class="bi bi-calendar3 me-1"></i> @item.PublishDate.ToString("dd/MM/yyyy")</p>
+                            <h5 class="fw-bold mb-3">@item.Title</h5>
+                            <p class="text-muted small">@item.Summary</p>
+                        </div>
+                        <div class="card-footer bg-white border-0 pb-4 px-4">
+                            <a href="@Url.Action("Details", "Home", new { id = item.NewsID })"
+                               class="btn btn-link p-0 text-primary fw-bold text-decoration-none">
+                                ĐỌC TIẾP <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12 text-center py-5">
+                <p class="text-muted italic">Đang cập nhật các bản tin mới nhất từ Delta...</p>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .news-card {
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+
+        .news-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        }
+</style>

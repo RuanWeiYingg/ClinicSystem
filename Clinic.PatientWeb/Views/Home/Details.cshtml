@@ -1,0 +1,36 @@
+﻿@model Clinic.Shared.Model.News
+
+<div class="container mt-5 mb-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="@Url.Action("News", "Home")">Tin tức</a></li>
+            <li class="breadcrumb-item active">@Model.Title</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-md-9">
+            <h1 class="fw-bold text-primary mb-3">@Model.Title</h1>
+            <p class="text-muted">
+                <i class="bi bi-calendar3"></i> @Model.PublishDate.ToString("dd/MM/yyyy") |
+                <i class="bi bi-tag"></i> @Model.Summary
+            </p>
+            <hr>
+
+            @if (!string.IsNullOrEmpty(Model.ImageUrl))
+            {
+                <img src="@Model.ImageUrl" class="img-fluid rounded mb-4 w-100" style="max-height: 450px; object-fit: cover;">
+            }
+
+            <div class="news-content fs-5" style="line-height: 1.8; text-align: justify;">
+                @Html.Raw(Model.Content?.Replace("\n", "<br/>"))
+            </div>
+
+            <div class="mt-5">
+                <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                    <i class="bi bi-chevron-left"></i> Quay lại
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

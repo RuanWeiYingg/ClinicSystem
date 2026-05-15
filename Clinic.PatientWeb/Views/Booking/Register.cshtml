@@ -1,0 +1,32 @@
+﻿@using Clinic.Shared.Model
+@model User
+@{
+    ViewData["Title"] = "Đăng ký";
+}
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5">
+        <div class="card shadow border-0">
+            <div class="card-body p-5">
+                <h2 class="text-center mb-4 fw-bold text-primary">ĐĂNG KÝ THÀNH VIÊN</h2>
+                <p class="text-center text-muted mb-4 small">Đăng ký để sử dụng chức năng đặt lịch và xem hồ sơ</p>
+
+                <form asp-action="Register" method="post">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Họ và Tên</label>
+                        <input asp-for="FullName" class="form-control form-control-lg" placeholder="Nhập tên của bạn" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Số điện thoại</label>
+                        <input asp-for="PhoneNumber" class="form-control form-control-lg" placeholder="0123 456 789" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Mật khẩu</label>
+                        <input asp-for="PasswordHash" type="password" class="form-control form-control-lg" required />
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 btn-lg shadow mt-3">TẠO TÀI KHOẢN</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,126 @@
+﻿@model Clinic.Shared.Model.User
+@{
+    ViewData["Title"] = "Hồ sơ cá nhân";
+}
+
+<div class="container py-5">
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 text-center p-4" style="border-radius: 15px;">
+                <div class="mb-3">
+                    <div class="rounded-circle bg-primary d-inline-flex align-items-center justify-content-center text-white shadow-sm"
+                         style="width: 100px; height: 100px; font-size: 40px;">
+                        @(Model?.FullName?.Substring(0, 1).ToUpper() ?? "U")
+                    </div>
+                </div>
+                <h4 class="fw-bold mb-1">@Model?.FullName</h4>
+                <p class="text-muted small mb-3">Thành viên từ: @DateTime.Now.ToString("MM/yyyy")</p>
+
+                <div class="d-flex justify-content-around border-top pt-3">
+                    <div>
+                        <h6 class="fw-bold mb-0">12</h6>
+                        <small class="text-muted">Lịch hẹn</small>
+                    </div>
+                    <div class="border-start"></div>
+                    <div>
+                        <h6 class="fw-bold mb-0">Hoạt động</h6>
+                        <small class="text-success">Trực tuyến</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0 mt-4 p-3" style="border-radius: 15px;">
+                <h6 class="fw-bold text-dark mb-3">Lối tắt</h6>
+                <div class="list-group list-group-flush small">
+                    <a href="/Appointments/History" class="list-group-item list-group-item-action border-0 px-0">
+                        <i class="bi bi-clock-history me-2"></i> Lịch sử khám bệnh
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action border-0 px-0 text-danger">
+                        <i class="bi bi-box-arrow-right me-2"></i> Đăng xuất
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0" style="border-radius: 15px;">
+                <div class="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold text-primary mb-0">THÔNG TIN CHI TIẾT</h5>
+                    <button type="button" class="btn btn-sm btn-outline-primary" id="btnEdit">
+                        <i class="bi bi-pencil-square me-1"></i> Chỉnh sửa
+                    </button>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="UpdateProfile" method="post" id="profileForm">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted">Họ và tên</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-0"><i class="bi bi-person"></i></span>
+                                    <input type="text" name="FullName" class="form-control bg-light border-0" value="@Model?.FullName" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted">Số điện thoại</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-0"><i class="bi bi-telephone"></i></span>
+                                    <input type="text" name="PhoneNumber" class="form-control bg-light border-0" value="@Model?.PhoneNumber" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label small fw-bold text-muted">Địa chỉ Email</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-0"><i class="bi bi-envelope"></i></span>
+                                    <input type="email" name="Email" class="form-control bg-light border-0" value="@Model?.Email" readonly>
+                                </div>
+                            </div>
+
+                            <div class="col-12 mt-5">
+                                <h6 class="fw-bold border-bottom pb-2 mb-3">Bảo mật tài khoản</h6>
+                                <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded">
+                                    <div>
+                                        <p class="mb-0 fw-bold small">Mật khẩu</p>
+                                        <p class="mb-0 text-muted small">Thay đổi mật khẩu định kỳ để bảo vệ tài khoản</p>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-light border shadow-sm">Đổi mật khẩu</button>
+                                </div>
+                            </div>
+
+                            <div class="col-12 mt-4 d-none" id="saveSection">
+                                <hr>
+                                <div class="d-flex justify-content-end gap-2">
+                                    <button type="button" class="btn btn-light" id="btnCancel">Hủy bỏ</button>
+                                    <button type="submit" class="btn btn-primary px-4">Lưu thay đổi</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="mt-4 text-center">
+                <p class="text-muted small"><i class="bi bi-shield-check me-1"></i> Dữ liệu y tế của bạn được mã hóa và bảo mật bởi tiêu chuẩn Delta System.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Logic chuyển đổi chế độ Chỉnh sửa đơn giản
+        document.getElementById('btnEdit').addEventListener('click', function() {
+            const inputs = document.querySelectorAll('#profileForm input');
+            inputs.forEach(input => {
+                input.readOnly = false;
+                input.classList.remove('bg-light');
+                input.classList.add('border');
+            });
+            document.getElementById('saveSection').classList.remove('d-none');
+            this.classList.add('d-none');
+        });
+
+        document.getElementById('btnCancel').addEventListener('click', function() {
+            location.reload();
+        });
+    </script>
+}

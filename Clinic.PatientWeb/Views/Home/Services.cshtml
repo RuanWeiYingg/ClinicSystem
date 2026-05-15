@@ -1,0 +1,35 @@
+﻿@model IEnumerable<Clinic.Shared.Model.Services>
+
+@{
+    ViewData["Title"] = "Dịch vụ y tế";
+}
+
+<div class="container mt-5">
+    <h2 class="text-center fw-bold text-primary mb-5">DANH MỤC DỊCH VỤ</h2>
+    
+    <div class="row">
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var item in Model)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm border-0">
+                        @* Sử dụng ImageUrl đã thêm vào DB *@
+                        <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "https://via.placeholder.com/400x250" : item.ImageUrl)" 
+                             class="card-img-top" alt="@item.ServiceName" style="height: 200px; object-fit: cover;">
+                        
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">@item.ServiceName</h5>
+                            <p class="text-muted">Thời gian: @item.DurationMinutes phút</p>
+                            <h5 class="text-danger fw-bold">@item.Price.ToString("N0") VNĐ</h5>
+                        </div>
+                        <div class="card-footer bg-white border-0 pb-3">
+                            <a asp-controller="Booking" asp-action="Create" asp-route-id="@item.ServiceID" 
+                               class="btn btn-primary w-100 shadow-sm">ĐẶT LỊCH NGAY</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div

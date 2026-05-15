@@ -1,0 +1,93 @@
+﻿@using Clinic.Shared.Model
+@model Clinic.Shared.Model.Appointment
+
+@{
+    ViewData["Title"] = "Đặt lịch khám";
+
+    // Ép kiểu các danh sách từ ViewBag để tránh lỗi RuntimeBinderException
+    var specialties = ViewBag.Specialties as List<Specialty>;
+    var doctors = ViewBag.Doctors as List<Doctor>;
+    var services = ViewBag.Services as List<Services>;
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white p-3">
+            <h4 class="mb-0"><i class="bi bi-calendar-plus me-2"></i>ĐẶT LỊCH KHÁM MỚI</h4>
+        </div>
+        <div class="card-body p-4">
+            @if (ViewBag.Error != null)
+            {
+                <div class="alert alert-danger">@ViewBag.Error</div>
+            }
+
+            <form asp-action="CreateBooking" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Chuyên Khoa</label>
+                        <select class="form-select" name="SpecialtyID" required>
+                            <option value="">-- Chọn chuyên khoa --</option>
+                            @if (specialties != null)
+                            {
+                                foreach (var item in specialties)
+                                {
+                                    // Sử dụng SpecialtyId (chữ d thường) theo file Model Specialty bạn đã gửi
+                                    <option value="@item.SpecialtyID">@item.SpecialtyName</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Bác Sĩ</label>
+                        <select asp-for="DoctorID" class="form-select" required>
+                            <option value="">-- Chọn bác sĩ --</option>
+                            @if (doctors != null)
+                            {
+                                foreach (var item in doctors)
+                                {
+                                    // Vì FullName nằm trong User, chúng ta gọi item.User?.FullName
+                                    // Sử dụng toán tử ?. để tránh lỗi nếu User bị null
+                                    <option value="@item.DoctorID">
+                                        @(item.User?.FullName ?? $"Bác sĩ (Mã: {item.DoctorID})")
+                                    </option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Ngày & Giờ khám mong muốn</label>
+                        <input asp-for="AppointmentDate" type="datetime-local" class="form-control" required />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Dịch Vụ Khám</label>
+                        <select asp-for="ServiceID" class="form-select" required>
+                            <option value="">-- Chọn dịch vụ --</option>
+                            @if (services != null)
+                            {
+                                foreach (var item in services)
+                                {
+                                    <option value="@item.ServiceID">@item.ServiceName - @item.Price.ToString("N0") VNĐ</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label fw-bold">Triệu chứng/Ghi chú bệnh lý</label>
+                        <textarea asp-for="Notes" class="form-control" rows="3" placeholder="Mô tả sơ qua tình trạng sức khỏe của bạn..."></textarea>
+                    </div>
+                </div>
+
+                <div class="text-end mt-3">
+                    <a asp-action="Index" class="btn btn-secondary me-2">Hủy bỏ</a>
+                    <button type="submit" class="btn btn-success px-5">XÁC NHẬN ĐẶT LỊCH</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

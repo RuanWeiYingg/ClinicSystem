@@ -1,0 +1,223 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Clinic System</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        .nav-link:hover {
+            color: #0d6efd !important;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
+            color: #0d6efd;
+        }
+
+        .avatar-circle {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: #0d6efd;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .notif-badge {
+            font-size: 10px;
+            min-width: 16px;
+            height: 16px;
+            padding: 0 4px;
+            line-height: 16px;
+        }
+
+        .booking-alert {
+            border-left: 4px solid #0d6efd;
+            border-radius: 0;
+            margin-bottom: 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    @* ========== ĐỌC SESSION Ở ĐÂY ========== *@
+    @{
+        var sessionUser = Context.Session.GetString("FullName");
+        var isLoggedIn = !string.IsNullOrEmpty(sessionUser);
+    }
+
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-0">
+            <div class="container py-2">
+                <a class="navbar-brand fw-bold text-primary" asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-hospital"></i> DELTA SYSTEM
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Trang chủ</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-dark" href="#" role="button" data-bs-toggle="dropdown">
+                                Giới thiệu
+                            </a>
+                            <ul class="dropdown-menu shadow-sm">
+                                <li><a class="dropdown-item" asp-controller="Home" asp-action="About">Tiểu sử phòng khám</a></li>
+                                <li><a class="dropdown-item" asp-controller="Home" asp-action="Doctors">Đội ngũ bác sĩ</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" asp-controller="Home" asp-action="Facilities">Cơ sở vật chất</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Services">Dịch vụ y tế</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="News">Tin tức</a>
+                        </li>
+
+                        @if (isLoggedIn)
+                        {
+                            <li class="nav-item border-start ms-2 ps-2">
+                                <a class="nav-link text-primary fw-bold" asp-controller="Booking" asp-action="MyHistory">
+                                    <i class="bi bi-calendar-check"></i> Lịch hẹn của tôi
+                                </a>
+                            </li>
+                        }
+                    </ul>
+
+                    <div class="d-flex align-items-center gap-2">
+                        @if (isLoggedIn)
+                        {
+                            @* Nút đặt lịch nhanh *@
+                            <a class="btn btn-outline-primary btn-sm shadow-sm" asp-controller="Booking" asp-action="Register">
+                                <i class="bi bi-plus-lg"></i> Đăng ký khám
+                            </a>
+
+                            @* Chuông thông báo *@
+                            <div class="dropdown">
+                                <button class="btn btn-light btn-sm position-relative" data-bs-toggle="dropdown" title="Thông báo">
+                                    <i class="bi bi-bell fs-5"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="min-width:300px; max-height:360px; overflow-y:auto;">
+                                    <li><h6 class="dropdown-header">Thông báo</h6></li>
+                                    @if (ViewBag.Notifications != null && ((List<string>)ViewBag.Notifications).Count > 0)
+                                    {
+                                        foreach (var notif in (List<string>)ViewBag.Notifications)
+                                        {
+                                            <li>
+                                                <a class="dropdown-item small" href="#">
+                                                    <i class="bi bi-calendar-event text-primary me-1"></i> @notif
+                                                </a>
+                                            </li>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <li>
+                                            <span class="dropdown-item text-muted small">
+                                                <i class="bi bi-check2-all me-1"></i> Không có thông báo mới
+                                            </span>
+                                        </li>
+                                    }
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item small text-center text-primary" asp-controller="Booking" asp-action="MyHistory">
+                                            Xem tất cả lịch hẹn →
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            @* Dropdown tài khoản *@
+                            <div class="dropdown">
+                                <button class="btn btn-light btn-sm d-flex align-items-center gap-2 px-2" data-bs-toggle="dropdown">
+                                    <div class="avatar-circle">
+                                        @sessionUser![0].ToString().ToUpper()
+                                    </div>
+                                    <span class="d-none d-md-inline text-dark" style="max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:14px;">
+                                        @sessionUser
+                                    </span>
+                                    <i class="bi bi-chevron-down" style="font-size:11px;"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                    <li>
+                                        <div class="px-3 py-2 border-bottom">
+                                            <div class="fw-semibold" style="font-size:14px;">@sessionUser</div>
+                                            <div class="text-muted" style="font-size:12px;">Bệnh nhân</div>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Account" asp-action="Profile">
+                                            <i class="bi bi-person me-2 text-secondary"></i> Hồ sơ cá nhân
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Booking" asp-action="MyHistory">
+                                            <i class="bi bi-calendar-check me-2 text-secondary"></i> Lịch hẹn của tôi
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Account" asp-action="ChangePassword">
+                                            <i class="bi bi-shield-lock me-2 text-secondary"></i> Đổi mật khẩu
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item text-danger" asp-controller="Account" asp-action="Logout">
+                                            <i class="bi bi-box-arrow-right me-2"></i> Đăng xuất
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        }
+                        else
+                        {
+                            <a class="btn btn-outline-primary shadow-sm" asp-controller="Booking" asp-action="Register">Đăng ký khám</a>
+                            <a class="btn btn-primary shadow-sm" asp-controller="Account" asp-action="Login">Đăng nhập</a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        @* Banner nhắc lịch hẹn sắp tới *@
+        @if (isLoggedIn && ViewBag.UpcomingBookingAlert != null)
+        {
+            <div class="alert alert-info booking-alert alert-dismissible fade show mb-0 px-4 py-2" role="alert">
+                <i class="bi bi-calendar-event-fill me-2"></i>
+                @ViewBag.UpcomingBookingAlert
+                <a asp-controller="Booking" asp-action="MyHistory" class="alert-link ms-2">Xem chi tiết →</a>
+                <button type="button" class="btn-close py-2" data-bs-dismiss="alert"></button>
+            </div>
+        }
+    </header>
+
+    <div class="container mt-3">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted mt-5 py-4 bg-light text-center">
+        <div class="container">
+            &copy; 2026 - <strong>Phòng khám Đa khoa Clinic</strong> -
+            <a asp-controller="Home" asp-action="Privacy" class="text-decoration-none">Chính sách bảo mật</a>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
